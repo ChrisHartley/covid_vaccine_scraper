@@ -50,12 +50,23 @@ sh = gc.open_by_key(spreadsheet_key)
 
 worksheet = sh.worksheet("First Dose Count by County")
 
+def excel_column_name(n):
+    """Number to Excel-style column name, e.g., 1 = A, 26 = Z, 27 = AA, 703 = AAA."""
+	# From https://stackoverflow.com/a/45312360/2731298 - Thanks devon.
+    name = ''
+    while n > 0:
+        n, r = divmod (n - 1, 26)
+        name = chr(r + ord('A')) + name
+    return name
+
 import string
 for i in range(1,20):
 	value = worksheet.cell(1,i).value
-	print(i)
-	print('[{}]'.format(value,) )
-	row = string.ascii_uppercase[i-1]
+#	print(i)
+#	print('[{}]'.format(value,) )
+	#row = string.ascii_uppercase[i-1]
+	row = excel_column_name(i)
+#	print(row)
 	if value is None or value == '':
 		print('Updating')
 		worksheet.update('{}1:{}1'.format(row,row), datetime.now().strftime('%x %X'))
