@@ -41,6 +41,7 @@ scope = ['https://spreadsheets.google.com/feeds',
          'https://www.googleapis.com/auth/drive']
 
 
+# Service key is created per https://gspread.readthedocs.io/en/latest/oauth2.html#for-bots-using-service-account
 gc = gspread.service_account(filename='./google-key.json')
 
 spreadsheet_key = '14i8B3UeUkE1XbbYO_CtLuiQF6R3cwQxKbYTrT6UlPck'
