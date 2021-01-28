@@ -4,12 +4,20 @@ import gspread
 from df2gspread import df2gspread as d2g
 from datetime import datetime
 
+import argparse
+
+parser = argparse.ArgumentParser(description='Scrape Indiana COVID Vaccine Dashboard and Update Google Sheet')
+parser.add_argument('-d', '--dry-run', default=False, action='store_true')
+args = parser.parse_args()
+
+
 scope = ['https://spreadsheets.google.com/feeds',
          'https://www.googleapis.com/auth/drive']
 
 # Service key is created per https://gspread.readthedocs.io/en/latest/oauth2.html#for-bots-using-service-account
 gc = gspread.service_account(filename='./google-key.json')
 
+# You can copy my spreadsheet and then get the new ID from the URL if you want to make your own 
 spreadsheet_key = '14i8B3UeUkE1XbbYO_CtLuiQF6R3cwQxKbYTrT6UlPck'
 wks_name = 'Master'
 
@@ -47,23 +55,27 @@ data_to_update = [
 ]
 
 def main():
-	for data_set in data_to_update:
+    for data_set in data_to_update:
 
-		dashboard = ts.getWorksheet(data_set['source'])
-		dataframe = dashboard.data
+        dashboard = ts.getWorksheet(data_set['source'])
+        dataframe = dashboard.data
 
-
-		worksheet = sh.worksheet(data_set['sheet'])
-
+        worksheet = sh.worksheet(data_set['sheet'])
+        print('Processing {}'.format(data_set['sheet'],))
 		# step through the columns finding the first blank one and stick the data there.
-		for i in range(1,20):
-			value = worksheet.cell(1,i).value
-			row = excel_column_name(i)
-			if value is None or value == '':
-				print('Updating')
-				worksheet.update('{}1:{}1'.format(row,row), datetime.now().strftime('%x %X'))
-				worksheet.update('{}2:{}93'.format(row,row), dataframe[[data_set['dataframe']]].values.tolist())
-				break
+        for i in range(1,20):
+            value = worksheet.cell(1,i).value
+            row = excel_column_name(i)
+            if value is None or value == '':
+                if args.dry_run == False:
+                    print('Updating google sheet')
+                    worksheet.update('{}1:{}1'.format(row,row), datetime.now().strftime('%x %X'))
+                    worksheet.update('{}2:{}93'.format(row,row), dataframe[[data_set['dataframe']]].values.tolist())
+                else:
+                    print('Dry run requested, not updating..')
+                    print(data_set['sheet'])
+                    print(dataframe[[data_set['dataframe']]].values.tolist())
+                break
 
 if __name__ == "__main__":
     main()
